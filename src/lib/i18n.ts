@@ -1,0 +1,203 @@
+// src/lib/i18n.ts - Translation configurations and utilities
+
+export type Language = 'en' | 'ta';
+
+export const translations = {
+  en: {
+    nav: {
+      home: 'Home',
+      search: 'Search',
+      sangam: 'Sangam',
+      profile: 'Profile',
+      about: 'About',
+      contact: 'Contact',
+    },
+    sangam: {
+      title: 'Sangam Directory',
+      subtitle: 'Find and Connect with Community Organizations',
+      search_placeholder: 'Search Sangam by name or city...',
+      search_by_district: 'Search by District',
+      search_by_community: 'Search by Community',
+      popular: 'Popular Sangams',
+      recent: 'Recently Added Sangams',
+      all_sangams: 'All Sangams',
+      register_sangam: 'Register Your Sangam',
+      no_results: 'No Sangams found. Try different filters.',
+      loading: 'Loading...',
+    },
+    sangam_card: {
+      call_now: 'Call Now',
+      whatsapp: 'WhatsApp',
+      google_maps: 'View Map',
+      office_timing: 'Office Timing',
+      contact_person: 'Contact Person',
+      read_more: 'Read More',
+    },
+    register_form: {
+      title: 'Register Your Sangam',
+      form_description: 'Help your community connect better',
+      sangam_name: 'Sangam Name',
+      community: 'Community',
+      address: 'Address',
+      district: 'District',
+      city: 'City',
+      phone: 'Phone Number',
+      whatsapp: 'WhatsApp Number',
+      email: 'Email',
+      description: 'Description',
+      contact_person: 'Contact Person Name',
+      office_timing: 'Office Timing',
+      submit: 'Submit Registration',
+      success: 'Registration submitted successfully!',
+      error: 'Error submitting registration',
+      required: 'This field is required',
+      invalid_email: 'Please enter a valid email',
+      invalid_phone: 'Please enter a valid phone number',
+    },
+    admin: {
+      title: 'Admin Dashboard',
+      sangams: 'Manage Sangams',
+      registrations: 'Pending Registrations',
+      communities: 'Manage Communities',
+      districts: 'Manage Districts',
+      add_sangam: 'Add Sangam',
+      edit_sangam: 'Edit Sangam',
+      delete_sangam: 'Delete Sangam',
+      approve: 'Approve',
+      reject: 'Reject',
+      pending: 'Pending',
+      approved: 'Approved',
+      rejected: 'Rejected',
+    },
+    common: {
+      search: 'Search',
+      filter: 'Filter',
+      sort: 'Sort',
+      loading: 'Loading...',
+      error: 'An error occurred',
+      success: 'Success',
+      cancel: 'Cancel',
+      save: 'Save',
+      delete: 'Delete',
+      edit: 'Edit',
+      add: 'Add',
+      close: 'Close',
+      back: 'Back',
+    },
+    footer: {
+      about_sangam: 'About Sangam Directory',
+      register_sangam: 'Register Sangam',
+      contact_sangam: 'Contact Sangam',
+      privacy_policy: 'Privacy Policy',
+      contact_us: 'Contact Us',
+    },
+  },
+  ta: {
+    nav: {
+      home: 'வீடு',
+      search: 'தேடுக',
+      sangam: 'சங்கம்',
+      profile: 'சுயவிவரம்',
+      about: 'பற்றி',
+      contact: 'தொடர்பு',
+    },
+    sangam: {
+      title: 'சங்கம் கோப்பகம்',
+      subtitle: 'சமூக நிறுவனங்களைக் கண்டுபிடித்து இணைக்கவும்',
+      search_placeholder: 'சங்கம் பெயர் அல்லது நகரத்தால் தேடுக...',
+      search_by_district: 'மாவட்டத்தால் தேடுக',
+      search_by_community: 'சமூகத்தால் தேடுக',
+      popular: 'பிரபலமான சங்கங்கள்',
+      recent: 'சமீபத்தில் சேர்க்கப்பட்ட சங்கங்கள்',
+      all_sangams: 'அனைத்து சங்கங்கள்',
+      register_sangam: 'உங்கள் சங்கத்தைப் பதிவு செய்யுங்கள்',
+      no_results: 'சங்கங்கள் எதுவும் கிடைக்கவில்லை. வெவ்வேறு வடிப்பைகளை முயற்சிக்கவும்.',
+      loading: 'ஏற்றுகிறது...',
+    },
+    sangam_card: {
+      call_now: 'இப்போது அழைக்கவும்',
+      whatsapp: 'விஸ்ப்பிஸ்',
+      google_maps: 'வரைபடத்தைக் காட்டு',
+      office_timing: 'அலுவலக நேரம்',
+      contact_person: 'தொடர்பு ஆள்',
+      read_more: 'மேலும் படிக்க',
+    },
+    register_form: {
+      title: 'உங்கள் சங்கத்தைப் பதிவு செய்யுங்கள்',
+      description: 'உங்கள் சமூகத்தை நன்றாக இணைக்க உதவுங்கள்',
+      sangam_name: 'சங்கம் பெயர்',
+      community: 'சமூகம்',
+      address: 'முகவரி',
+      district: 'மாவட்டம்',
+      city: 'நகரம்',
+      phone: 'ফোன் எண்',
+      whatsapp: 'விஸ்ப்பிஸ் எண்',
+      email: 'மின்னஞ்சல்',
+      description: 'விளக்கம்',
+      contact_person: 'தொடர்பு ஆளின் பெயர்',
+      office_timing: 'அலுவலக நேரம்',
+      submit: 'பதிவு சமர்ப்பிக்கவும்',
+      success: 'பதிவு வெற்றிகரமாக சமர்ப்பிக்கப்பட்டது!',
+      error: 'பதிவு சமர்ப்பிக்க பிழை',
+      required: 'இந்த புலம் தேவை',
+      invalid_email: 'தயவு செய்து சரியான மின்னஞ்சல் உள்ளிடவும்',
+      invalid_phone: 'தயவு செய்து சரியான ফோன் எண் உள்ளிடவும்',
+    },
+    admin: {
+      title: 'நிர்வாக டாஷ்போர்ட்',
+      sangams: 'சங்கங்களை நிர்வகிக்கவும்',
+      registrations: 'பதிவுசெய்யப்பட்ட மனுக்கள்',
+      communities: 'சமூகங்களை நிர்வகிக்கவும்',
+      districts: 'மாவட்டங்களை நிர்வகிக்கவும்',
+      add_sangam: 'சங்கம் சேர்க்கவும்',
+      edit_sangam: 'சங்கம் திருத்தவும்',
+      delete_sangam: 'சங்கம் நீக்கவும்',
+      approve: 'அনுமதி',
+      reject: 'நிராகரிக்கவும்',
+      pending: 'நிலுவரில் உள்ள',
+      approved: 'அনுமதி பெற்ற',
+      rejected: 'நிராகரிக்கப்பட்ட',
+    },
+    common: {
+      search: 'தேடுக',
+      filter: 'வடிப்பி',
+      sort: 'வகைப்படுத்தவும்',
+      loading: 'ஏற்றுகிறது...',
+      error: 'ஒரு பிழை ஏற்பட்டது',
+      success: 'வெற்றி',
+      cancel: 'ரத்து',
+      save: 'சேமி',
+      delete: 'நீக்கவும்',
+      edit: 'திருத்தவும்',
+      add: 'சேர்க்கவும்',
+      close: 'மூடு',
+      back: 'பின்னால்',
+    },
+    footer: {
+      about_sangam: 'சங்கம் கோப்பகத்தைப் பற்றி',
+      register_sangam: 'சங்கம் பதிவு',
+      contact_sangam: 'சங்கத்தைத் தொடர்புகொள்ளவும்',
+      privacy_policy: 'தனியுரிமை கொள்கை',
+      contact_us: 'எங்களைத் தொடர்பு கொள்ளவும்',
+    },
+  },
+};
+
+export function getTranslation(language: Language, key: string): string {
+  const keys = key.split('.');
+  let current: any = translations[language];
+
+  for (const k of keys) {
+    current = current?.[k];
+    if (!current) break;
+  }
+
+  return current || key;
+}
+
+export function getSupportedLanguages() {
+  return [
+    { code: 'en', name: 'English' },
+    { code: 'ta', name: 'தமிழ்' },
+  ];
+}

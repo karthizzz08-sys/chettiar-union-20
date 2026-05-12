@@ -10,8 +10,11 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SearchRouteImport } from './routes/search'
+import { Route as SangamRouteImport } from './routes/sangam'
+import { Route as RegisterSangamRouteImport } from './routes/register-sangam'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
@@ -22,6 +25,16 @@ const SearchRoute = SearchRouteImport.update({
   path: '/search',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SangamRoute = SangamRouteImport.update({
+  id: '/sangam',
+  path: '/sangam',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RegisterSangamRoute = RegisterSangamRouteImport.update({
+  id: '/register-sangam',
+  path: '/register-sangam',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RegisterRoute = RegisterRouteImport.update({
   id: '/register',
   path: '/register',
@@ -30,6 +43,11 @@ const RegisterRoute = RegisterRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
@@ -54,16 +72,22 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/register-sangam': typeof RegisterSangamRoute
+  '/sangam': typeof SangamRoute
   '/search': typeof SearchRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/profile': typeof AuthenticatedProfileRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/register-sangam': typeof RegisterSangamRoute
+  '/sangam': typeof SangamRoute
   '/search': typeof SearchRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/profile': typeof AuthenticatedProfileRoute
@@ -72,8 +96,11 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/admin': typeof AdminRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/register-sangam': typeof RegisterSangamRoute
+  '/sangam': typeof SangamRoute
   '/search': typeof SearchRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
@@ -82,19 +109,34 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
     | '/login'
     | '/register'
+    | '/register-sangam'
+    | '/sangam'
     | '/search'
     | '/dashboard'
     | '/profile'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/register' | '/search' | '/dashboard' | '/profile'
+  to:
+    | '/'
+    | '/admin'
+    | '/login'
+    | '/register'
+    | '/register-sangam'
+    | '/sangam'
+    | '/search'
+    | '/dashboard'
+    | '/profile'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/admin'
     | '/login'
     | '/register'
+    | '/register-sangam'
+    | '/sangam'
     | '/search'
     | '/_authenticated/dashboard'
     | '/_authenticated/profile'
@@ -103,8 +145,11 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
+  AdminRoute: typeof AdminRoute
   LoginRoute: typeof LoginRoute
   RegisterRoute: typeof RegisterRoute
+  RegisterSangamRoute: typeof RegisterSangamRoute
+  SangamRoute: typeof SangamRoute
   SearchRoute: typeof SearchRoute
 }
 
@@ -115,6 +160,20 @@ declare module '@tanstack/react-router' {
       path: '/search'
       fullPath: '/search'
       preLoaderRoute: typeof SearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sangam': {
+      id: '/sangam'
+      path: '/sangam'
+      fullPath: '/sangam'
+      preLoaderRoute: typeof SangamRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/register-sangam': {
+      id: '/register-sangam'
+      path: '/register-sangam'
+      fullPath: '/register-sangam'
+      preLoaderRoute: typeof RegisterSangamRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/register': {
@@ -129,6 +188,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -179,8 +245,11 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
+  AdminRoute: AdminRoute,
   LoginRoute: LoginRoute,
   RegisterRoute: RegisterRoute,
+  RegisterSangamRoute: RegisterSangamRoute,
+  SangamRoute: SangamRoute,
   SearchRoute: SearchRoute,
 }
 export const routeTree = rootRouteImport
