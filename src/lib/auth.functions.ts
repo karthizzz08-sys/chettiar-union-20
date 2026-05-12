@@ -7,7 +7,7 @@ import { createHash, randomInt } from "crypto";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 const BREVO_API_URL = "https://api.brevo.com/v3";
-const SENDER_EMAIL = process.env.BREVO_SENDER_EMAIL || "noreply@chettiarconnect.app";
+const SENDER_EMAIL = process.env.BREVO_SENDER_EMAIL || "ablelov252@gmail.com";
 const SENDER_NAME = process.env.BREVO_SENDER_NAME || "Chettiar Connect";
 
 const hashCode = (code: string) => createHash("sha256").update(code).digest("hex");
@@ -16,13 +16,18 @@ async function sendBrevoEmail(toEmail: string, code: string) {
   const BREVO_API_KEY = process.env.BREVO_API_KEY;
   
   if (!BREVO_API_KEY) {
+    console.error("[Brevo] Error: BREVO_API_KEY environment variable is not set");
     throw new Error("BREVO_API_KEY environment variable is not set");
   }
 
   // Validate Brevo API key format (should start with xkeysib- or similar)
   if (!BREVO_API_KEY.includes("-") && !BREVO_API_KEY.startsWith("xkey")) {
+    console.error("[Brevo] Error: Invalid API key format. Key should start with 'xkey' prefix");
     throw new Error("Invalid BREVO_API_KEY format. Brevo API keys typically start with 'xkey' prefix");
   }
+
+  console.log(`[Brevo] Preparing to send OTP email to: ${toEmail}`);
+  console.log(`[Brevo] Sender: "${SENDER_NAME}" <${SENDER_EMAIL}>`);
 
   const html = `
     <div style="font-family:Inter,Arial,sans-serif;max-width:560px;margin:0 auto;padding:32px;background:#fdf8f0;border-radius:12px">
@@ -36,24 +41,50 @@ async function sendBrevoEmail(toEmail: string, code: string) {
       <p style="color:#aaa;margin:24px 0 0;font-size:12px">If you didn't request this, you can safely ignore this email.</p>
     </div>`;
 
-  const res = await fetch(`${BREVO_API_URL}/smtp/email`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "api-key": BREVO_API_KEY,
-    },
-    body: JSON.stringify({
-      sender: { name: SENDER_NAME, email: SENDER_EMAIL },
-      to: [{ email: toEmail }],
-      subject: `${code} is your Chettiar Connect verification code`,
-      htmlContent: html,
-    }),
-  });
+  const emailPayload = {
+    sender: { name: SENDER_NAME, email: SENDER_EMAIL },
+    to: [{ email: toEmail }],
+    subject: `${code} is your Chettiar Connect verification code`,
+    htmlContent: html,
+  };
+
+  console.log(`[Brevo] Sending email via Brevo Transactional API...`);
   
-  if (!res.ok) {
-    const txt = await res.text();
-    console.error(`[Brevo Error] Status: ${res.status}, Response:`, txt);
-    throw new Error(`Brevo send failed [${res.status}]: ${txt}`);
+  try {
+    const res = await fetch(`${BREVO_API_URL}/smtp/email`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "api-key": BREVO_API_KEY,
+      },
+      body: JSON.stringify(emailPayload),
+    });
+    
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error(`[Brevo] Failed to send email. Status: ${res.status}`);
+      console.error(`[Brevo] Response: ${errorText}`);
+      
+      let errorDetails = errorText;
+      try {
+        const errorJson = JSON.parse(errorText);
+        errorDetails = errorJson.message || errorJson.error || errorText;
+      } catch {
+        // If not JSON, use raw text
+      }
+      
+      throw new Error(`Brevo email send failed [${res.status}]: ${errorDetails}`);
+    }
+    
+    const responseData = await res.json();
+    console.log(`[Brevo] Email sent successfully! Message ID: ${responseData.messageId || responseData.id}`);
+    return responseData;
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error(`[Brevo] Email send error: ${error.message}`);
+      throw error;
+    }
+    throw new Error(`Brevo send failed: Unknown error`);
   }
 }
 
@@ -63,37 +94,56 @@ export const sendOtp = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     const email = data.email;
+    console.log(`[OTP] Request to send OTP to: ${email}`);
 
-    // Rate limit: max 1 OTP per 30s, 5 per hour
-    const since = new Date(Date.now() - 60 * 60 * 1000).toISOString();
-    const { data: recent } = await supabaseAdmin
-      .from("otp_codes")
-      .select("created_at")
-      .eq("email", email)
-      .gte("created_at", since)
-      .order("created_at", { ascending: false });
-    if (recent && recent.length >= 5) {
-      throw new Error("Too many OTP requests. Try again in an hour.");
-    }
-    if (recent && recent.length > 0) {
-      const last = new Date(recent[0].created_at).getTime();
-      if (Date.now() - last < 30_000) {
-        throw new Error("Please wait 30 seconds before requesting another code.");
+    try {
+      // Rate limit: max 1 OTP per 30s, 5 per hour
+      const since = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+      const { data: recent } = await supabaseAdmin
+        .from("otp_codes")
+        .select("created_at")
+        .eq("email", email)
+        .gte("created_at", since)
+        .order("created_at", { ascending: false });
+      
+      if (recent && recent.length >= 5) {
+        console.warn(`[OTP] Rate limit exceeded for ${email}: 5+ requests in the last hour`);
+        throw new Error("Too many OTP requests. Try again in an hour.");
       }
+      
+      if (recent && recent.length > 0) {
+        const last = new Date(recent[0].created_at).getTime();
+        if (Date.now() - last < 30_000) {
+          console.warn(`[OTP] Rate limit exceeded for ${email}: less than 30 seconds since last request`);
+          throw new Error("Please wait 30 seconds before requesting another code.");
+        }
+      }
+
+      const code = String(randomInt(0, 1_000_000)).padStart(6, "0");
+      const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString();
+      console.log(`[OTP] Generated code: ${code}, expires at: ${expiresAt}`);
+
+      const { error: insErr } = await supabaseAdmin.from("otp_codes").insert({
+        email,
+        code_hash: hashCode(code),
+        expires_at: expiresAt,
+      });
+      
+      if (insErr) {
+        console.error(`[OTP] Database insert error for ${email}:`, insErr.message);
+        throw new Error(insErr.message);
+      }
+
+      console.log(`[OTP] Code stored in database. Now sending email...`);
+      await sendBrevoEmail(email, code);
+      
+      console.log(`[OTP] Successfully sent OTP to: ${email}`);
+      return { ok: true, expiresAt };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error(`[OTP] Failed to send OTP to ${email}: ${errorMessage}`);
+      throw error;
     }
-
-    const code = String(randomInt(0, 1_000_000)).padStart(6, "0");
-    const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString();
-
-    const { error: insErr } = await supabaseAdmin.from("otp_codes").insert({
-      email,
-      code_hash: hashCode(code),
-      expires_at: expiresAt,
-    });
-    if (insErr) throw new Error(insErr.message);
-
-    await sendBrevoEmail(email, code);
-    return { ok: true, expiresAt };
   });
 
 export const verifyOtp = createServerFn({ method: "POST" })
@@ -107,66 +157,98 @@ export const verifyOtp = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     const { email, code } = data;
+    console.log(`[OTP] Verifying OTP for: ${email}`);
 
-    const { data: rows } = await supabaseAdmin
-      .from("otp_codes")
-      .select("*")
-      .eq("email", email)
-      .eq("consumed", false)
-      .order("created_at", { ascending: false })
-      .limit(1);
-    const row = rows?.[0];
-    if (!row) throw new Error("No active code. Request a new one.");
-    if (new Date(row.expires_at).getTime() < Date.now()) {
-      throw new Error("Code expired. Request a new one.");
-    }
-    const attempts = row.attempts ?? 0;
-    if (attempts >= 5) {
-      throw new Error("Too many attempts. Request a new code.");
-    }
-    if (row.code_hash !== hashCode(code)) {
-      await supabaseAdmin
+    try {
+      const { data: rows } = await supabaseAdmin
         .from("otp_codes")
-        .update({ attempts: attempts + 1 })
-        .eq("id", row.id);
-      throw new Error("Invalid code.");
-    }
+        .select("*")
+        .eq("email", email)
+        .eq("consumed", false)
+        .order("created_at", { ascending: false })
+        .limit(1);
+      
+      const row = rows?.[0];
+      if (!row) {
+        console.warn(`[OTP] No active OTP code found for ${email}`);
+        throw new Error("No active code. Request a new one.");
+      }
+      
+      if (new Date(row.expires_at).getTime() < Date.now()) {
+        console.warn(`[OTP] Code expired for ${email}`);
+        throw new Error("Code expired. Request a new one.");
+      }
+      
+      const attempts = row.attempts ?? 0;
+      if (attempts >= 5) {
+        console.warn(`[OTP] Too many failed attempts for ${email} (${attempts})`);
+        throw new Error("Too many attempts. Request a new code.");
+      }
+      
+      if (row.code_hash !== hashCode(code)) {
+        console.warn(`[OTP] Invalid code attempt for ${email} (attempt ${attempts + 1}/5)`);
+        await supabaseAdmin
+          .from("otp_codes")
+          .update({ attempts: attempts + 1 })
+          .eq("id", row.id);
+        throw new Error("Invalid code.");
+      }
 
-    await supabaseAdmin.from("otp_codes").update({ consumed: true }).eq("id", row.id);
+      console.log(`[OTP] Code verified successfully for ${email}`);
+      await supabaseAdmin.from("otp_codes").update({ consumed: true }).eq("id", row.id);
 
-    // Find or create user — paginate listUsers to find by email
-    let userId: string | null = null;
-    for (let page = 1; page <= 20 && !userId; page++) {
-      const { data: list, error } = await supabaseAdmin.auth.admin.listUsers({
-        page,
-        perPage: 200,
-      });
-      if (error) break;
-      const found = list.users.find((u) => u.email?.toLowerCase() === email);
-      if (found) userId = found.id;
-      if (list.users.length < 200) break;
-    }
-    if (!userId) {
-      const created = await supabaseAdmin.auth.admin.createUser({
+      // Find or create user — paginate listUsers to find by email
+      let userId: string | null = null;
+      for (let page = 1; page <= 20 && !userId; page++) {
+        const { data: list, error } = await supabaseAdmin.auth.admin.listUsers({
+          page,
+          perPage: 200,
+        });
+        if (error) break;
+        const found = list.users.find((u) => u.email?.toLowerCase() === email);
+        if (found) userId = found.id;
+        if (list.users.length < 200) break;
+      }
+      
+      if (!userId) {
+        console.log(`[OTP] Creating new user for: ${email}`);
+        const created = await supabaseAdmin.auth.admin.createUser({
+          email,
+          email_confirm: true,
+        });
+        if (created.error) {
+          console.error(`[OTP] Failed to create user: ${created.error.message}`);
+          throw new Error(created.error.message);
+        }
+        userId = created.data.user!.id;
+      }
+
+      // Generate a magic link, return token_hash for client to verify
+      const linkRes = await supabaseAdmin.auth.admin.generateLink({
+        type: "magiclink",
         email,
-        email_confirm: true,
       });
-      if (created.error) throw new Error(created.error.message);
-      userId = created.data.user!.id;
+      if (linkRes.error) {
+        console.error(`[OTP] Failed to generate magic link: ${linkRes.error.message}`);
+        throw new Error(linkRes.error.message);
+      }
+      
+      const tokenHash =
+        // @ts-ignore
+        linkRes.data?.properties?.hashed_token ??
+        // @ts-ignore
+        linkRes.data?.hashed_token;
+      
+      if (!tokenHash) {
+        console.error(`[OTP] No token hash in response for ${email}`);
+        throw new Error("Could not issue session token.");
+      }
+
+      console.log(`[OTP] Successfully verified OTP and issued token for: ${email}`);
+      return { tokenHash, userId, email };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error(`[OTP] Verification failed for ${email}: ${errorMessage}`);
+      throw error;
     }
-
-    // Generate a magic link, return token_hash for client to verify
-    const linkRes = await supabaseAdmin.auth.admin.generateLink({
-      type: "magiclink",
-      email,
-    });
-    if (linkRes.error) throw new Error(linkRes.error.message);
-    const tokenHash =
-      // @ts-ignore
-      linkRes.data?.properties?.hashed_token ??
-      // @ts-ignore
-      linkRes.data?.hashed_token;
-    if (!tokenHash) throw new Error("Could not issue session token.");
-
-    return { tokenHash, userId, email };
   });
