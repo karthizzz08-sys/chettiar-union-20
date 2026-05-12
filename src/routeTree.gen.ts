@@ -10,29 +10,21 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SearchRouteImport } from './routes/search'
-import { Route as SangamRouteImport } from './routes/sangam'
-import { Route as RegisterSangamRouteImport } from './routes/register-sangam'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as CommunityDirectoryRouteImport } from './routes/community-directory'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CommunityDirectoryRegisterRouteImport } from './routes/community-directory/register'
+import { Route as CommunityDirectoryIdRouteImport } from './routes/community-directory/$id'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as CommunityDirectoryIdEditRouteImport } from './routes/community-directory/$id/edit'
 
 const SearchRoute = SearchRouteImport.update({
   id: '/search',
   path: '/search',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SangamRoute = SangamRouteImport.update({
-  id: '/sangam',
-  path: '/sangam',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const RegisterSangamRoute = RegisterSangamRouteImport.update({
-  id: '/register-sangam',
-  path: '/register-sangam',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RegisterRoute = RegisterRouteImport.update({
@@ -43,6 +35,11 @@ const RegisterRoute = RegisterRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CommunityDirectoryRoute = CommunityDirectoryRouteImport.update({
+  id: '/community-directory',
+  path: '/community-directory',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRoute = AdminRouteImport.update({
@@ -59,6 +56,17 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CommunityDirectoryRegisterRoute =
+  CommunityDirectoryRegisterRouteImport.update({
+    id: '/register',
+    path: '/register',
+    getParentRoute: () => CommunityDirectoryRoute,
+  } as any)
+const CommunityDirectoryIdRoute = CommunityDirectoryIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => CommunityDirectoryRoute,
+} as any)
 const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
@@ -69,87 +77,104 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const CommunityDirectoryIdEditRoute =
+  CommunityDirectoryIdEditRouteImport.update({
+    id: '/edit',
+    path: '/edit',
+    getParentRoute: () => CommunityDirectoryIdRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/community-directory': typeof CommunityDirectoryRouteWithChildren
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
-  '/register-sangam': typeof RegisterSangamRoute
-  '/sangam': typeof SangamRoute
   '/search': typeof SearchRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/profile': typeof AuthenticatedProfileRoute
+  '/community-directory/$id': typeof CommunityDirectoryIdRouteWithChildren
+  '/community-directory/register': typeof CommunityDirectoryRegisterRoute
+  '/community-directory/$id/edit': typeof CommunityDirectoryIdEditRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/community-directory': typeof CommunityDirectoryRouteWithChildren
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
-  '/register-sangam': typeof RegisterSangamRoute
-  '/sangam': typeof SangamRoute
   '/search': typeof SearchRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/profile': typeof AuthenticatedProfileRoute
+  '/community-directory/$id': typeof CommunityDirectoryIdRouteWithChildren
+  '/community-directory/register': typeof CommunityDirectoryRegisterRoute
+  '/community-directory/$id/edit': typeof CommunityDirectoryIdEditRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/admin': typeof AdminRoute
+  '/community-directory': typeof CommunityDirectoryRouteWithChildren
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
-  '/register-sangam': typeof RegisterSangamRoute
-  '/sangam': typeof SangamRoute
   '/search': typeof SearchRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
+  '/community-directory/$id': typeof CommunityDirectoryIdRouteWithChildren
+  '/community-directory/register': typeof CommunityDirectoryRegisterRoute
+  '/community-directory/$id/edit': typeof CommunityDirectoryIdEditRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/admin'
+    | '/community-directory'
     | '/login'
     | '/register'
-    | '/register-sangam'
-    | '/sangam'
     | '/search'
     | '/dashboard'
     | '/profile'
+    | '/community-directory/$id'
+    | '/community-directory/register'
+    | '/community-directory/$id/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/admin'
+    | '/community-directory'
     | '/login'
     | '/register'
-    | '/register-sangam'
-    | '/sangam'
     | '/search'
     | '/dashboard'
     | '/profile'
+    | '/community-directory/$id'
+    | '/community-directory/register'
+    | '/community-directory/$id/edit'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/admin'
+    | '/community-directory'
     | '/login'
     | '/register'
-    | '/register-sangam'
-    | '/sangam'
     | '/search'
     | '/_authenticated/dashboard'
     | '/_authenticated/profile'
+    | '/community-directory/$id'
+    | '/community-directory/register'
+    | '/community-directory/$id/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   AdminRoute: typeof AdminRoute
+  CommunityDirectoryRoute: typeof CommunityDirectoryRouteWithChildren
   LoginRoute: typeof LoginRoute
   RegisterRoute: typeof RegisterRoute
-  RegisterSangamRoute: typeof RegisterSangamRoute
-  SangamRoute: typeof SangamRoute
   SearchRoute: typeof SearchRoute
 }
 
@@ -160,20 +185,6 @@ declare module '@tanstack/react-router' {
       path: '/search'
       fullPath: '/search'
       preLoaderRoute: typeof SearchRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/sangam': {
-      id: '/sangam'
-      path: '/sangam'
-      fullPath: '/sangam'
-      preLoaderRoute: typeof SangamRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/register-sangam': {
-      id: '/register-sangam'
-      path: '/register-sangam'
-      fullPath: '/register-sangam'
-      preLoaderRoute: typeof RegisterSangamRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/register': {
@@ -188,6 +199,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/community-directory': {
+      id: '/community-directory'
+      path: '/community-directory'
+      fullPath: '/community-directory'
+      preLoaderRoute: typeof CommunityDirectoryRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
@@ -211,6 +229,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/community-directory/register': {
+      id: '/community-directory/register'
+      path: '/register'
+      fullPath: '/community-directory/register'
+      preLoaderRoute: typeof CommunityDirectoryRegisterRouteImport
+      parentRoute: typeof CommunityDirectoryRoute
+    }
+    '/community-directory/$id': {
+      id: '/community-directory/$id'
+      path: '/$id'
+      fullPath: '/community-directory/$id'
+      preLoaderRoute: typeof CommunityDirectoryIdRouteImport
+      parentRoute: typeof CommunityDirectoryRoute
+    }
     '/_authenticated/profile': {
       id: '/_authenticated/profile'
       path: '/profile'
@@ -224,6 +256,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/dashboard'
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRoute
+    }
+    '/community-directory/$id/edit': {
+      id: '/community-directory/$id/edit'
+      path: '/edit'
+      fullPath: '/community-directory/$id/edit'
+      preLoaderRoute: typeof CommunityDirectoryIdEditRouteImport
+      parentRoute: typeof CommunityDirectoryIdRoute
     }
   }
 }
@@ -242,14 +281,37 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
   AuthenticatedRouteChildren,
 )
 
+interface CommunityDirectoryIdRouteChildren {
+  CommunityDirectoryIdEditRoute: typeof CommunityDirectoryIdEditRoute
+}
+
+const CommunityDirectoryIdRouteChildren: CommunityDirectoryIdRouteChildren = {
+  CommunityDirectoryIdEditRoute: CommunityDirectoryIdEditRoute,
+}
+
+const CommunityDirectoryIdRouteWithChildren =
+  CommunityDirectoryIdRoute._addFileChildren(CommunityDirectoryIdRouteChildren)
+
+interface CommunityDirectoryRouteChildren {
+  CommunityDirectoryIdRoute: typeof CommunityDirectoryIdRouteWithChildren
+  CommunityDirectoryRegisterRoute: typeof CommunityDirectoryRegisterRoute
+}
+
+const CommunityDirectoryRouteChildren: CommunityDirectoryRouteChildren = {
+  CommunityDirectoryIdRoute: CommunityDirectoryIdRouteWithChildren,
+  CommunityDirectoryRegisterRoute: CommunityDirectoryRegisterRoute,
+}
+
+const CommunityDirectoryRouteWithChildren =
+  CommunityDirectoryRoute._addFileChildren(CommunityDirectoryRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   AdminRoute: AdminRoute,
+  CommunityDirectoryRoute: CommunityDirectoryRouteWithChildren,
   LoginRoute: LoginRoute,
   RegisterRoute: RegisterRoute,
-  RegisterSangamRoute: RegisterSangamRoute,
-  SangamRoute: SangamRoute,
   SearchRoute: SearchRoute,
 }
 export const routeTree = rootRouteImport

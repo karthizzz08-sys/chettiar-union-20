@@ -5,6 +5,7 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { Button } from "@/components/ui/button";
+import { CommunityDirectoryHomepage } from "@/components/community/CommunityDirectoryHomepage";
 import heroImg from "@/assets/hero.jpg";
 
 export const Route = createFileRoute("/")({ component: Home });
@@ -78,6 +79,9 @@ function Home() {
           </motion.div>
         ))}
       </section>
+
+      {/* Community Directory Section */}
+      <CommunityDirectoryHomepage />
 
       {/* Success stories */}
       <section className="mx-auto max-w-7xl px-6 py-16">
