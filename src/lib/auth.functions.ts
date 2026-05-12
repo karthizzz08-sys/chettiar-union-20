@@ -1,4 +1,4 @@
-// Server function: send & verify OTP via Brevo gateway.
+// Server function: send & verify OTP via Brevo API v3.
 // Uses Supabase admin to create users and issue magic-link tokens that the
 // client exchanges for a real session.
 import { createServerFn } from "@tanstack/react-start";
@@ -6,17 +6,23 @@ import { z } from "zod";
 import { createHash, randomInt } from "crypto";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
-const BREVO_GATEWAY = "https://connector-gateway.lovable.dev/brevo";
-const SENDER_EMAIL = "noreply@chettiarconnect.app";
-const SENDER_NAME = "Chettiar Connect";
+const BREVO_API_URL = "https://api.brevo.com/v3";
+const SENDER_EMAIL = process.env.BREVO_SENDER_EMAIL || "noreply@chettiarconnect.app";
+const SENDER_NAME = process.env.BREVO_SENDER_NAME || "Chettiar Connect";
 
 const hashCode = (code: string) => createHash("sha256").update(code).digest("hex");
 
 async function sendBrevoEmail(toEmail: string, code: string) {
-  const LOVABLE_API_KEY = process.env.LOVABLE_API_KEY;
   const BREVO_API_KEY = process.env.BREVO_API_KEY;
-  if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY missing");
-  if (!BREVO_API_KEY) throw new Error("BREVO_API_KEY missing");
+  
+  if (!BREVO_API_KEY) {
+    throw new Error("BREVO_API_KEY environment variable is not set");
+  }
+
+  // Validate Brevo API key format (should start with xkeysib- or similar)
+  if (!BREVO_API_KEY.includes("-") && !BREVO_API_KEY.startsWith("xkey")) {
+    throw new Error("Invalid BREVO_API_KEY format. Brevo API keys typically start with 'xkey' prefix");
+  }
 
   const html = `
     <div style="font-family:Inter,Arial,sans-serif;max-width:560px;margin:0 auto;padding:32px;background:#fdf8f0;border-radius:12px">
@@ -30,12 +36,11 @@ async function sendBrevoEmail(toEmail: string, code: string) {
       <p style="color:#aaa;margin:24px 0 0;font-size:12px">If you didn't request this, you can safely ignore this email.</p>
     </div>`;
 
-  const res = await fetch(`${BREVO_GATEWAY}/smtp/email`, {
+  const res = await fetch(`${BREVO_API_URL}/smtp/email`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${LOVABLE_API_KEY}`,
-      "X-Connection-Api-Key": BREVO_API_KEY,
+      "api-key": BREVO_API_KEY,
     },
     body: JSON.stringify({
       sender: { name: SENDER_NAME, email: SENDER_EMAIL },
@@ -44,8 +49,10 @@ async function sendBrevoEmail(toEmail: string, code: string) {
       htmlContent: html,
     }),
   });
+  
   if (!res.ok) {
     const txt = await res.text();
+    console.error(`[Brevo Error] Status: ${res.status}, Response:`, txt);
     throw new Error(`Brevo send failed [${res.status}]: ${txt}`);
   }
 }
