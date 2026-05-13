@@ -18,13 +18,16 @@ export default defineConfig({
     target: "esnext",
     minify: "esbuild",
     rollupOptions: {
-      // Mark Node.js modules as external to prevent bundling for browser
-      external: ["crypto", "node:crypto", "@tanstack/start-storage-context"],
+      // Node.js modules are handled by alias or will fail with clear errors
     },
   },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      "@tanstack/start-storage-context": path.resolve(
+        __dirname,
+        "./src/lib/mock-storage-context.ts"
+      ),
     },
   },
 });
