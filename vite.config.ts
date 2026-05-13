@@ -1,15 +1,32 @@
-// @lovable.dev/vite-tanstack-config already includes the following — do NOT add them manually
-// or the app will break with duplicate plugins:
-//   - tanstackStart, viteReact, tailwindcss, tsConfigPaths, cloudflare (build-only),
-//     componentTagger (dev-only), VITE_* env injection, @ path alias, React/TanStack dedupe,
-//     error logger plugins, and sandbox detection (port/host/strictPort).
-// You can pass additional config via defineConfig({ vite: { ... } }) if needed.
-import { defineConfig } from "@lovable.dev/vite-tanstack-config";
+import react from "@vitejs/plugin-react";
+import { defineConfig } from "vite";
+import tsConfigPaths from "vite-tsconfig-paths";
+import path from "path";
 
-// Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
-// @cloudflare/vite-plugin builds from this — wrangler.jsonc main alone is insufficient.
+// Standard Vite SPA configuration for Netlify static deployment
 export default defineConfig({
-  tanstackStart: {
-    server: { entry: "server" },
+  plugins: [
+    react(),
+    tsConfigPaths(),
+  ],
+  define: {
+    "process.env.NODE_ENV": '"production"',
+  },
+  build: {
+    outDir: "dist/client",
+    emptyOutDir: true,
+    target: "esnext",
+    minify: "esbuild",
+    rollupOptions: {
+      external: ["crypto", "node:crypto"],
+    },
+  },
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+      "@tanstack/start-storage-context": path.resolve(__dirname, "./src/lib/mock-storage-context.ts"),
+      "crypto": path.resolve(__dirname, "./src/lib/mock-crypto.ts"),
+      "node:crypto": path.resolve(__dirname, "./src/lib/mock-crypto.ts"),
+    },
   },
 });
