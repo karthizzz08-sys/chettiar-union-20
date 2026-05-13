@@ -3,14 +3,27 @@
 // client exchanges for a real session.
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { createHash, randomInt } from "crypto";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 const BREVO_API_URL = "https://api.brevo.com/v3";
 const SENDER_EMAIL = process.env.BREVO_SENDER_EMAIL || "ablelov252@gmail.com";
 const SENDER_NAME = process.env.BREVO_SENDER_NAME || "Chettiar Connect";
 
-const hashCode = (code: string) => createHash("sha256").update(code).digest("hex");
+// Dynamic import for crypto (server-only) to prevent browser bundling
+const getCryptoFunctions = async () => {
+  const { createHash, randomInt } = await import("crypto");
+  return { createHash, randomInt };
+};
+
+const hashCode = async (code: string) => {
+  const { createHash } = await getCryptoFunctions();
+  return createHash("sha256").update(code).digest("hex");
+};
+
+const generateOtpCode = async () => {
+  const { randomInt } = await getCryptoFunctions();
+  return String(randomInt(0, 1_000_000)).padStart(6, "0");
+};
 
 async function sendBrevoEmail(toEmail: string, code: string) {
   const BREVO_API_KEY = process.env.BREVO_API_KEY;
@@ -119,13 +132,13 @@ export const sendOtp = createServerFn({ method: "POST" })
         }
       }
 
-      const code = String(randomInt(0, 1_000_000)).padStart(6, "0");
+      const code = await generateOtpCode();
       const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString();
       console.log(`[OTP] Generated code: ${code}, expires at: ${expiresAt}`);
 
       const { error: insErr } = await supabaseAdmin.from("otp_codes").insert({
         email,
-        code_hash: hashCode(code),
+        code_hash: await hashCode(code),
         expires_at: expiresAt,
       });
       
@@ -185,7 +198,8 @@ export const verifyOtp = createServerFn({ method: "POST" })
         throw new Error("Too many attempts. Request a new code.");
       }
       
-      if (row.code_hash !== hashCode(code)) {
+      const codeHash = await hashCode(code);
+      if (row.code_hash !== codeHash) {
         console.warn(`[OTP] Invalid code attempt for ${email} (attempt ${attempts + 1}/5)`);
         await supabaseAdmin
           .from("otp_codes")
