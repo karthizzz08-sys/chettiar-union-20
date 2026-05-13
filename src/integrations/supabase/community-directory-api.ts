@@ -8,7 +8,7 @@ import type {
   CommunityDirectoryStats,
 } from './community-directory-types';
 
-// Create a new listing
+// Create a new listing (authenticated user)
 export async function createCommunityDirectoryListing(
   data: CommunityDirectoryInput
 ): Promise<CommunityDirectoryListing> {
@@ -30,6 +30,36 @@ export async function createCommunityDirectoryListing(
       is_public: data.is_public !== undefined ? data.is_public : true,
       is_community_only: data.is_community_only !== undefined ? data.is_community_only : false,
       hide_address: data.hide_address || false,
+    })
+    .select()
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  return listing;
+}
+
+// Create a new guest listing (no login required)
+export async function createGuestCommunityDirectoryListing(
+  data: CommunityDirectoryInput,
+  guestEmail: string,
+  guestPhone: string
+): Promise<CommunityDirectoryListing> {
+  const { data: listing, error } = await supabase
+    .from('community_directory')
+    .insert({
+      user_id: null,
+      guest_email: guestEmail,
+      guest_phone: guestPhone,
+      ...data,
+      image_urls: data.image_urls || [],
+      is_public: data.is_public !== undefined ? data.is_public : true,
+      is_community_only: data.is_community_only !== undefined ? data.is_community_only : false,
+      hide_address: data.hide_address || false,
+      // Guest submissions require approval before display
+      is_approved: false,
     })
     .select()
     .single();

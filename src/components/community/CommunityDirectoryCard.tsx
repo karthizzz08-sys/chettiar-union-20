@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useState } from 'react';
+import { maskPhoneNumber } from '@/lib/phone-masking';
 import type { CommunityDirectoryListing } from '@/integrations/supabase/community-directory-types';
 
 interface CommunityDirectoryCardProps {
@@ -15,6 +16,7 @@ interface CommunityDirectoryCardProps {
 export function CommunityDirectoryCard({ listing, onViewDetails }: CommunityDirectoryCardProps) {
   const [isFavorite, setIsFavorite] = useState(false);
   const primaryImage = listing.image_urls?.[0];
+  const maskedPhone = maskPhoneNumber(listing.phone);
 
   const handleWhatsApp = () => {
     if (listing.whatsapp) {
@@ -93,6 +95,12 @@ export function CommunityDirectoryCard({ listing, onViewDetails }: CommunityDire
               <span>{listing.profession}</span>
             </div>
           )}
+
+          {/* Masked Phone Number */}
+          <div className="flex items-center gap-2 text-gray-600">
+            <Phone className="w-4 h-4 text-amber-600" />
+            <span title="Full number available after contacting">{maskedPhone}</span>
+          </div>
 
           <div className="flex items-center gap-2">
             <Badge variant="outline">{listing.community_type}</Badge>

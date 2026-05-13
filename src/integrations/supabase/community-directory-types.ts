@@ -1,10 +1,14 @@
 // src/integrations/supabase/community-directory-types.ts
 
+// src/integrations/supabase/community-directory-types.ts
+
 export type FunctionType = 'Wedding' | 'Ear Piercing' | 'House Warming' | 'Temple Function' | 'Business' | 'Others';
 
 export interface CommunityDirectoryListing {
   id: string;
-  user_id: string;
+  user_id: string | null;
+  guest_email?: string;
+  guest_phone?: string;
   full_name: string;
   family_name: string;
   community_type: string;
